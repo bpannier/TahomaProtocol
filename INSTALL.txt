@@ -1,0 +1,13 @@
+Dependencies
+============
+The only external package dependency is 'requests', to avoid some warnings under Python 2.x you also install
+requests[security].
+
+pip install requests
+pip install 'requests[security]'
+
+alternatively to the security package you might try to downgrade requests package.
+
+WARNING this has not been tested:
+pip install requests==2.5.3
+
