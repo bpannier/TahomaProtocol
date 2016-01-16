@@ -1,3 +1,5 @@
+A Python library to talk to the home automation system Tahoma
+=============================================================
 
 Why this software package
 =========================
