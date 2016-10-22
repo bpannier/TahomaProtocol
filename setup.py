@@ -26,7 +26,7 @@ with open('tahoma/__init__.py', 'r') as fd:
 if not version:
     raise RuntimeError('Cannot find version information')
 
-with open('README.rst', 'r', 'utf-8') as f:
+with open('README.md', 'r', 'utf-8') as f:
     readme = f.read()
 with open('HISTORY.rst', 'r', 'utf-8') as f:
     history = f.read()
