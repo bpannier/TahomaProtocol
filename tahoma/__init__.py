@@ -6,13 +6,13 @@ Tahoma library
 :license: Apache 2.0, see LICENSE for more details.
 
 """
-from action import Action, Command
-from actionGroup import ActionGroup
-from device import Device
-from event import Event, DeviceStateChangedEvent, ExecutionStateChangedEvent, CommandExecutionStateChangedEvent
-from eventState import EventState
-from execution import Execution
-from protocol import Protocol
+from .action import Action, Command
+from .actionGroup import ActionGroup
+from .device import Device
+from .event import Event, DeviceStateChangedEvent, ExecutionStateChangedEvent, CommandExecutionStateChangedEvent
+from .eventState import EventState
+from .execution import Execution
+from .protocol import Protocol
 
 __title__ = 'tahoma'
 __version__ = '1.0.0'

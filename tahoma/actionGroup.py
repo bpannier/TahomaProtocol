@@ -1,4 +1,4 @@
-from action import Action
+from tahoma.action import Action
 
 class ActionGroup:
 

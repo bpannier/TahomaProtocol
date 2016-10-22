@@ -3,10 +3,10 @@
 import json
 import requests
 
-from event import Event, DeviceStateChangedEvent
-from execution import Execution
-from actionGroup import ActionGroup
-from device import Device
+from tahoma.event import Event, DeviceStateChangedEvent
+from tahoma.execution import Execution
+from tahoma.actionGroup import ActionGroup
+from tahoma.device import Device
 
 _CONNECT_HOST = "https://www.tahomalink.com/"
 _BASE_URL  = _CONNECT_HOST + "enduser-mobile-web/externalAPI/json/"

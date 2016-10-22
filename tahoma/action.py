@@ -1,6 +1,6 @@
 
 import json
-from device import Device
+from tahoma.device import Device
 
 class Action:
 
