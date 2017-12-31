@@ -2,11 +2,12 @@
 """
 import json
 import requests
+import datetime
 
-from event import Event, DeviceStateChangedEvent
-from execution import Execution
-from actionGroup import ActionGroup
-from device import Device
+from tahoma.event import Event, DeviceStateChangedEvent
+from tahoma.execution import Execution
+from tahoma.actionGroup import ActionGroup
+from tahoma.device import Device
 
 _CONNECT_HOST = "https://www.tahomalink.com/"
 _BASE_URL  = _CONNECT_HOST + "enduser-mobile-web/externalAPI/json/"
@@ -15,7 +16,7 @@ _BASE_HEADERS = { 'User-Agent' : 'mine',  }
 class Protocol :
     """dsdf
     """
-    def __init__(self, userName, userPassword, **kwargs ):
+    def __init__(self, userName, userPassword, cookie_file = None, **kwargs ):
         """Initalize the Tahoma protocol.
         :param userName: Tahoma username
         :param userPassword: Password
@@ -28,12 +29,35 @@ class Protocol :
         self.__gateway = {}
         self.__location = {}
         self.__cookie = ""
+        self.__username = userName
+        self.__password = userPassword
+        self.__cookie_file = cookie_file
 
         # skip conntect/login if we do special unit testing
         if 'unittest' in kwargs:
             return
 
-        login = { 'userId' : userName, 'userPassword' : userPassword }
+        perform_login = True
+        if cookie_file is not None:
+            try:
+                cookie_data = json.load(open(cookie_file, "rt"))
+                last_cookie_use = datetime.datetime.strptime(cookie_data['date'], "%Y%m%d %H:%M")
+                time_dif = datetime.datetime.now() - last_cookie_use
+                if time_dif.seconds > 7200:
+                    perform_login = True
+                else:
+                    self.__cookie = cookie_data['cookie']
+                    perform_login = False
+            except FileNotFoundError:
+                perform_login = True
+            except json.JSONDecodeError:
+                perform_login = True
+
+        if perform_login:
+            self.__login()
+
+    def __login(self):
+        login = {'userId': self.__username, 'userPassword': self.__password}
         header = _BASE_HEADERS.copy()
 
         request = requests.post( _BASE_URL + "login", data=login, headers=header )
@@ -57,6 +81,9 @@ class Protocol :
             raise ValueError('Could not login, no cookie set')
 
         self.__cookie = cookie
+        if self.__cookie_file is not None:
+            cookie_data = {'cookie' : cookie, 'date' : datetime.datetime.now().strftime("%Y%m%d %H:%M")}
+            json.dump(cookie_data, open(self.__cookie_file, "wt"))
 
     def getUser(self):
         """ Get the user informations from the server.
@@ -87,6 +114,11 @@ class Protocol :
         header['Cookie'] = self.__cookie
 
         request = requests.get( _BASE_URL + "getEndUser", headers=header )
+
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "getEndUser", headers=header)
 
         if request.status_code != 200:
             raise ValueError('Could not get user info, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
@@ -119,6 +151,11 @@ class Protocol :
         header['Cookie'] = self.__cookie
 
         request = requests.get( _BASE_URL + "getSetup", headers=header )
+
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "getSetup", headers=header)
 
         if request.status_code != 200:
             raise ValueError('Could not get setup, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
@@ -277,6 +314,11 @@ class Protocol :
 
         request = requests.post( _BASE_URL + "apply", headers=header, data=js )
 
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.post(_BASE_URL + "apply", headers=header, data=js)
+
         if request.status_code != 200:
             raise ValueError('Could not apply action, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
 
@@ -316,6 +358,11 @@ class Protocol :
         header['Cookie'] = self.__cookie
 
         request = requests.post( _BASE_URL + "getEvents", headers=header )
+
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.post(_BASE_URL + "getEvents", headers=header)
 
         if request.status_code != 200:
             raise ValueError('Could not get events, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
@@ -366,6 +413,11 @@ class Protocol :
 
         request = requests.get( _BASE_URL + "getCurrentExecutions", headers=header )
 
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "getCurrentExecutions", headers=header)
+
         if request.status_code != 200:
             raise ValueError('Could not get current executions, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
 
@@ -391,6 +443,11 @@ class Protocol :
 
         request = requests.get( _BASE_URL + "getHistory", headers=header )
 
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "getHistory", headers=header)
+
         if request.status_code != 200:
             raise ValueError('Could not get history, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
 
@@ -412,6 +469,11 @@ class Protocol :
 
         request = requests.get( _BASE_URL + "cancelExecutions", headers=header )
 
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "cancelExecutions", headers=header)
+
         if request.status_code != 200:
             raise ValueError('Could not cancel executions, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
 
@@ -425,6 +487,11 @@ class Protocol :
         header['Cookie'] = self.__cookie
 
         request = requests.get( _BASE_URL + "getActionGroups", headers=header )
+
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "getActionGroups", headers=header)
 
         if request.status_code != 200:
             raise ValueError('Could not get actions groups, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
@@ -451,6 +518,11 @@ class Protocol :
 
         request = requests.get( _BASE_URL + "launchActionGroup?oid=" + id, headers=header )
 
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "launchActionGroup?oid=" + id, headers=header)
+
         if request.status_code != 200:
             raise ValueError('Could not launch action group, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
 
@@ -471,6 +543,11 @@ class Protocol :
         js = self._createGetStateRequest(devices)
 
         request = requests.post( _BASE_URL + "getStates", headers=header, data=js )
+
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.post(_BASE_URL + "getStates", headers=header, data=js)
 
         if request.status_code != 200:
             raise ValueError('Could not update states, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )
@@ -518,6 +595,11 @@ class Protocol :
         header['Cookie'] = self.__cookie
 
         request = requests.get( _BASE_URL + "refreshAllStates", headers=header )
+
+        if request.status_code == 401:
+            self.__login()
+            header['Cookie'] = self.__cookie
+            request = requests.get(_BASE_URL + "refreshAllStates", headers=header)
 
         if request.status_code != 200:
             raise ValueError('Could not refresh all states, HTTP code: ' + str(request.status_code) + ' - ' + request.reason )

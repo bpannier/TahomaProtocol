@@ -1,6 +1,4 @@
-
-
-from eventState import EventState
+from tahoma.eventState import EventState
 
 class Event:
 

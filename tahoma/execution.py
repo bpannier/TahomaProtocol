@@ -1,5 +1,5 @@
-from action import Action
-from eventState import EventState
+from tahoma.action import Action
+from tahoma.eventState import EventState
 
 class Execution:
 
